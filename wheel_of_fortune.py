@@ -35,4 +35,5 @@ def print_char_counts(paths: List[str]):
     print()
 
 
-print_char_counts(CATEGORIES)
+if __name__ == '__main__':
+    print_char_counts(CATEGORIES)
