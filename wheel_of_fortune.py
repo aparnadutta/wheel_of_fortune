@@ -21,7 +21,7 @@ def count_chars(path: str):
             phrase = line.replace(" ", "").rstrip("\n")
             counts.update(phrase)
     for char, count in counts.most_common(10):
-        dists[char] = round(count / sum(counts.values()), 2)
+        dists[char] = round((count / sum(counts.values())*100), 2)
     all_letters = [dist for dist in dists.items()]
     return category, num_entries, all_letters
 
