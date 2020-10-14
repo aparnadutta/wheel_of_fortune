@@ -1,41 +1,37 @@
-from collections import Counter, defaultdict
-from typing import List, DefaultDict
+import os
+from collections import Counter
+from typing import List, Tuple
 
-CATEGORIES = ["around_the_house.txt",
-              "before_and_after.txt",
-              "book_title.txt",
-              "character.txt",
-              "classic_tv.txt",
-              "college_life.txt",
-              "event.txt"]
+# Gets all .txt files in the current directory and sorts them by file size.
+CATEGORIES = [file for file in os.listdir(os.getcwd()) if file[-3:] == "txt"]
+CATEGORIES.sort(key=lambda f: os.stat(f).st_size, reverse=True)
 
 VOWELS = set("AEIOU")
 
-
-def count_chars(path: str):
-    all_counts: Counter[str] = Counter()
-    all_dists = defaultdict()
+# Computes the probability of each vowel and consonant in the category.
+def count_chars(path: str) -> Tuple[str, int, List, List]:
     category = path[:-4].replace("_", " ").title()
+    all_counts: Counter[str] = Counter()
     num_entries = 0
     with open(path, encoding="utf8") as file:
         for line in file:
             num_entries += 1
-            phrase = line.replace(" ", "").rstrip("\n")
-            all_counts.update(phrase)
-    for char, count in all_counts.most_common(10):
-        all_dists[char] = round((count / sum(all_counts.values())*100), 2)
-    vowel_dist = {vowel: dist for vowel, dist in all_dists.items() if vowel in VOWELS}
-    cons_dist = {cons: dist for cons, dist in all_dists.items() if cons not in VOWELS}
-    list_v = [v for v in vowel_dist.items()]
-    list_c = [c for c in cons_dist.items()]
-    return category, num_entries, list_v, list_c
+            all_counts.update("".join(line.split()))
+    total = all_counts.most_common(10)
+    v_list = [(v, prob(count, all_counts)) for v, count in total if v in VOWELS]
+    c_list = [(c, prob(count, all_counts)) for c, count in total if c not in VOWELS]
+    return category, num_entries, v_list, c_list
 
+# Calculates the probability of one character.
+def prob(n: int, total: Counter):
+    return round(100*n / sum(total.values()), 2)
 
+# Prints the result of count_chars.
 def print_char_counts(paths: List[str]):
     all_paths = [count_chars(path) for path in paths]
-    sorted_paths = sorted(all_paths, key=lambda tup: tup[1], reverse=True)
-    for path in sorted_paths:
-        print(f"Category: {path[0]} ({path[1]} data points)\nVowels:{path[2]}\nConsonants:{path[3]}\n")
+    for path in all_paths:
+        print(f"Category: {path[0]} ({path[1]} data points)")
+        print(f"Vowels:\t\t{path[2]}\nConsonants:\t{path[3]}\n")
     print()
 
 
